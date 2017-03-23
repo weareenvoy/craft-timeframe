@@ -1,0 +1,78 @@
+{% set startId = id ~ '-time-start' -%}
+{% set endId = id ~ '-time-end' -%}
+{% set name = name is defined ? name -%}
+{% set startTime = value.startTime is defined ? value.startTime -%}
+{% set endTime = value.endTime is defined ? value.endTime -%}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
+
+<div class="datetimewrapper">
+    <div class="timewrapper">
+        {%- include "_includes/forms/text" with {
+            id: startId,
+            name: (name ? name~'[time][start]'),
+            autocomplete: false,
+            size: 10,
+            value: (startTime ? startTime|time('short') : '')
+        } -%}
+        {% if name -%}
+            <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
+        {%- endif -%}
+    </div>
+    <span> - </span>
+
+    <div class="timewrapper">
+        {%- include "_includes/forms/text" with {
+            id: endId,
+            name: (name ? name~'[time][end]'),
+            autocomplete: false,
+            size: 10,
+            value: (endTime  ? endTime|time('short') : '')
+        } -%}
+        {% if name -%}
+            <input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
+        {%- endif -%}
+    </div>
+
+    {%-    set localeData = craft.app.locale %}
+
+    {%- js %}
+        var $timePicker = $('#{{ startId|namespaceInputId|e('js') }}');
+        $timePicker.timepicker({
+            timeFormat: '{{ craft.app.locale.getTimeFormat('short', 'php') }}',
+            closeOnWindowScroll: false,
+            orientation: '{{ localeData.getOrientation() == 'ltr' ? 'l' : 'r' }}',
+            {% if minuteIncrement is defined %}step: '{{ minuteIncrement }}',{% endif %}
+            lang: {
+                am: '{{ localeData.getAMName()|lower }}',
+                AM: '{{ localeData.getAMName() }}',
+                pm: '{{ localeData.getPMName()|lower }}',
+                PM: '{{ localeData.getPMName() }}'
+            }
+        });
+
+        {% if startTime and startTime.format is defined %}
+            $timePicker.timepicker('setTime', {{ startTime|date('G') }}*3600 + {{ startTime|date('i') }}*60 + {{ startTime|date('s') }});
+        {% endif %}
+    {%- endjs %}
+
+    {%- js %}
+        var $timePicker = $('#{{ endId|namespaceInputId|e('js') }}');
+        $timePicker.timepicker({
+            timeFormat: '{{ craft.app.locale.getTimeFormat('short', 'php') }}',
+            closeOnWindowScroll: false,
+            orientation: '{{ localeData.getOrientation() == 'ltr' ? 'l' : 'r' }}',
+            {% if minuteIncrement is defined %}step: '{{ minuteIncrement }}',{% endif %}
+            lang: {
+                am: '{{ localeData.getAMName()|lower }}',
+                AM: '{{ localeData.getAMName() }}',
+                pm: '{{ localeData.getPMName()|lower }}',
+                PM: '{{ localeData.getPMName() }}'
+            }
+        });
+
+        {% if endTime and endTime.format is defined %}
+            $timePicker.timepicker('setTime', {{ endTime|date('G') }}*3600 + {{ endTime|date('i') }}*60 + {{ endTime|date('s') }});
+        {% endif %}
+    {%- endjs %}
+</div>
